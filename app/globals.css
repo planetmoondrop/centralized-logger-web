@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1b1b1b;
+  --foreground: #ededed;
+
+  /* Nextra theme tokens */
+  --nextra-bg: 27 27 27;
+  --nextra-primary-hue: 24;
+  --nextra-primary-saturation: 93%;
+  --nextra-primary-lightness: 70%;
+}
+
+/* Extra specificity so Nextra defaults can't override */
+html:root {
+  --nextra-bg: 27 27 27;
+  --nextra-primary-hue: 24;
+  --nextra-primary-saturation: 93%;
+  --nextra-primary-lightness: 70%;
+  --nextra-content-width: 100%;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1b1b1b;
+    --foreground: #ededed;
+  }
+}
+
+html {
+  /* Nextra typesetting uses `--x-font-sans` from its theme */
+  --x-font-sans:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--x-font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+/* Ensure "active" docs nav items use the primary color */
+.nextra-sidebar a[aria-current="page"],
+.nextra-toc a[aria-current="true"],
+.nextra-toc a[aria-current="page"] {
+  color: #faa56c;
+}
+
+/* Hover: accent on links and buttons (override Nextra utility link colors) */
+a:hover,
+a:focus-visible {
+  color: #faa56c !important;
+}
+
+/* Filled hover state: global link hover would keep accent text on orange bg */
+a.home-hero-cta:hover {
+  color: #1b1b1b !important;
+}
+
+button:hover,
+button:focus-visible,
+[role="button"]:hover,
+[role="button"]:focus-visible {
+  color: #faa56c !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+::selection {
+  background: rgba(250, 165, 108, 0.35);
+  color: var(--foreground);
+}
+
+/* Highlighted text (e.g. <mark>) uses the accent */
+mark {
+  background: #ededed !important;
+  color: #1b1b1b !important;
+}

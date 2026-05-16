@@ -1,0 +1,116 @@
+# Prometheus metrics
+
+`LokiLoggerModule` can expose a Prometheus `/metrics` endpoint with both Node.js system metrics and per‑route HTTP metrics suitable for production dashboards.
+
+## Enabling metrics
+
+In your module registration:
+
+```ts
+LokiLoggerModule.register({
+  serviceName: "backend",
+  lokiHost: "http://loki:3100",
+  enableMetrics: true,
+  metricsPath: "/metrics", // optional, default
+});
+```
+
+When `enableMetrics` is `true`, `LokiLoggerModule.apply(app)`:
+
+1. Creates a `MetricsService` with its own Prometheus `Registry`.
+2. Calls `collectDefaultMetrics` from `prom-client` with `{ app, env }` labels.
+3. Mounts `GET /metrics` on the underlying Express instance.
+
+## Exposed metrics
+
+The metrics implementation (see `MetricsService`) defines:
+
+- **`http_request_duration_seconds`** – `Histogram`
+  - Labels: `method`, `route`, `status_code`, `app`, `env`
+  - Buckets: `0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10`
+  - Populated from the middleware on each response.
+
+- **`http_requests_total`** – `Counter`
+  - Labels: `method`, `route`, `status_code`, `app`, `env`
+
+- **`http_requests_in_flight`** – `Gauge`
+  - Labels: `app`, `env`
+  - Incremented on request start, decremented on finish.
+
+In addition, `collectDefaultMetrics` exposes process‑level metrics such as:
+
+- CPU usage
+- Heap usage and GC stats
+- Event loop lag
+- Open file descriptors and handles
+
+## Scraping with Prometheus
+
+In the provided stack, Prometheus is configured in:
+
+- [`docker/services/prometheus/prometheus.yml`](http://github.com/planetmoondrop/centralized-logger-stack/blob/docker-release/services/prometheus/prometheus.yml)
+- [`docker/targets.yaml`](https://github.com/planetmoondrop/centralized-logger-stack/blob/docker-release/targets.yaml)
+
+`prometheus.yml` defines a `nestjs-services` job that reads targets from `targets.yaml`:
+
+```yaml
+scrape_configs:
+  - job_name: "nestjs-services"
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets.yaml
+        refresh_interval: 30s
+```
+
+`targets.yaml` is where you add or change your services:
+
+```yaml
+- targets: ["backend:3003"]
+  labels:
+    app: "backend"
+    env: "production"
+
+- targets: ["auth-service:3001"]
+  labels:
+    app: "auth-service"
+    env: "production"
+```
+
+> Prometheus hot‑reloads this file every 30 seconds; no restart is required.
+
+## Example Grafana queries
+
+Once Prometheus is scraping your services, you can build dashboards (or use the included ones) with queries like:
+
+- **P95 latency per route**
+
+```promql
+histogram_quantile(
+  0.95,
+  sum by (le, route) (
+    rate(http_request_duration_seconds_bucket[5m])
+  )
+)
+```
+
+- **Requests per second per service**
+
+```promql
+sum by (app) (rate(http_requests_total[1m]))
+```
+
+- **In‑flight requests by service**
+
+```promql
+http_requests_in_flight
+```
+
+## Production checklist
+
+- Ensure each service sets a consistent `env` value (e.g. `production`, `staging`) in its Loki options so labels align across logs and metrics.
+- Expose `/metrics` only on internal networks or behind authentication – the endpoint returns detailed system information.
+- Keep `PROMETHEUS_RETENTION` in `env.example` aligned with how long you need metrics for SLO calculations and debugging.
+
+Need help or want to support the project? Visit [Support](/docs/support).

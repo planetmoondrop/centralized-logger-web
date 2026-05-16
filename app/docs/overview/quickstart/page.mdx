@@ -1,0 +1,185 @@
+# Quickstart
+
+This guide wires the logger into an existing NestJS HTTP service and enables cross-service traces in a few steps.
+
+You should already have `@planetmoondrop/centralized-logger` installed (see [**Installation**](/docs/overview/installation/backend)).
+
+## 1. Register the module
+
+In your root `AppModule`:
+
+```ts
+// src/app.module.ts
+import { Module } from "@nestjs/common";
+import { LokiLoggerModule } from "@planetmoondrop/centralized-logger";
+
+@Module({
+  imports: [
+    LokiLoggerModule.register({
+      serviceName: "auth-service",
+      lokiHost: "http://loki:3100",
+      logLevel: "info",
+      enableMetrics: true,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+This:
+
+- Creates a global `LokiLoggerService` instance.
+- Prepares optional Prometheus metrics (exposed later via `apply()`).
+- Configures where to ship logs (`lokiHost`) and at what log level.
+
+> For dynamic configuration with `ConfigService`, use `LokiLoggerModule.registerAsync` – see **Configuration**.
+
+## 2. Wire `apply(app)` in `main.ts`
+
+After `NestFactory.create`, call `LokiLoggerModule.apply(app)` before `app.listen`.
+
+```ts
+// src/main.ts
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { LokiLoggerModule } from "@planetmoondrop/centralized-logger";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Expose trace headers to the browser (needed for @planetmoondrop/logger-client)
+  app.enableCors({
+    exposedHeaders: ["x-loki-trace-id", "x-parent-span-id"],
+  });
+
+  LokiLoggerModule.apply(app);
+  LokiLoggerModule.mountViewer(app); // optional, see Tracing & Trace Viewer
+
+  await app.listen(3000);
+}
+
+bootstrap();
+```
+
+`LokiLoggerModule.apply(app)`:
+
+1. Sets `LokiLoggerService` as the **global NestJS logger**.
+2. Adds HTTP middleware that:
+   - Creates or continues a `traceId` + `spanId` for every request.
+   - Stores them in `AsyncLocalStorage` along with route, method, IP, `userId`, etc.
+   - Logs `http_in` / `http_in_res` events with duration and status code.
+3. Registers a **global interceptor** that logs handler entry/exit/error with durations.
+4. When `enableMetrics: true`, exposes a Prometheus `/metrics` endpoint.
+
+## 3. Inject and use the logger
+
+Use the logger directly in your services:
+
+```ts
+import { Injectable } from "@nestjs/common";
+import { LokiLoggerService } from "@planetmoondrop/centralized-logger";
+
+@Injectable()
+export class OrdersService {
+  constructor(private readonly logger: LokiLoggerService) {}
+
+  async createOrder(dto: { userId: string }) {
+    this.logger.log("Creating order", "OrdersService", { userId: dto.userId });
+
+    // ...
+
+    this.logger.event("order.created", {
+      userId: dto.userId,
+      // include domain-specific identifiers for easy search in Loki
+    });
+  }
+}
+```
+
+You can also shorten the injection with the `@InjectLogger()` decorator:
+
+```ts
+import { Injectable } from "@nestjs/common";
+import {
+  InjectLogger,
+  LokiLoggerService,
+} from "@planetmoondrop/centralized-logger";
+
+@Injectable()
+export class PaymentsService {
+  @InjectLogger()
+  private readonly logger!: LokiLoggerService;
+}
+```
+
+## 4. Decorate methods for automatic logging
+
+The `@Log()` decorator adds structured entry/exit/error logs to any method without manual logger calls.
+
+```ts
+import { Injectable } from "@nestjs/common";
+import { Log } from "@planetmoondrop/centralized-logger";
+
+@Injectable()
+export class PaymentsService {
+  @Log({ level: "info", args: true })
+  async charge(userId: string, amount: number) {
+    // Business logic
+  }
+}
+```
+
+`@Log`:
+
+- Logs `→ Class.method` on entry and `← Class.method +Xms` on exit.
+- Includes `traceId`, `spanId`, and a per-request sequence number.
+- Can optionally log arguments and return values (`args`, `result`).
+
+## 5. Enable cross-service HTTP traces
+
+Import `LokiHttpModule` into any module that calls other services over HTTP.
+
+```ts
+// orders.module.ts
+import { Module } from "@nestjs/common";
+import { LokiHttpModule } from "@planetmoondrop/centralized-logger";
+import { OrdersService } from "./orders.service";
+
+@Module({
+  imports: [LokiHttpModule],
+  providers: [OrdersService],
+})
+export class OrdersModule {}
+```
+
+```ts
+// orders.service.ts
+import { Injectable } from "@nestjs/common";
+import { LokiHttpService } from "@planetmoondrop/centralized-logger";
+import { firstValueFrom } from "rxjs";
+
+@Injectable()
+export class OrdersService {
+  constructor(private readonly http: LokiHttpService) {}
+
+  async validateUser(userId: string) {
+    const res = await firstValueFrom(
+      this.http.get(`http://auth-service/api/users/${userId}`),
+    );
+    return res.data;
+  }
+}
+```
+
+`LokiHttpService` automatically:
+
+- Injects `x-loki-trace-id` and `x-parent-span-id` based on the current request’s trace context.
+- Logs outgoing calls as `http_out` events with duration and status code.
+
+## 6. Next steps
+
+- See [**Configuration**](/docs/overview/configuration) for all options, defaults, and production recommendations.
+- See [**Tracing & Trace Viewer**](/docs/tracing-and-viewer) for how trace IDs flow through Loki, Tempo, and the built-in viewer.
+- See [**Frontend client**](/docs/overview/installation/frontend) to connect your browser to the same traces using `@planetmoondrop/logger-client`.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

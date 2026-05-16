@@ -1,0 +1,217 @@
+# Configuration
+
+`LokiLoggerModule.register` accepts a rich set of options for production workloads. This page documents each option and its default as implemented in `LokiLoggerOptions`.
+
+## Basic options
+
+```ts
+import { LokiLoggerModule } from "@planetmoondrop/centralized-logger";
+
+LokiLoggerModule.register({
+  serviceName: "auth-service",
+  lokiHost: "http://loki:3100",
+  environment: process.env.NODE_ENV ?? "development",
+  logLevel: "info",
+});
+```
+
+- **`serviceName`** (required, string)
+  - Unique name for this microservice.
+  - Used as the `app` label in Loki and Prometheus metrics.
+- **`lokiHost`** (required, string)
+  - Base URL of your Loki instance, e.g. `http://loki:3100` [See Deployment](/docs/deployment).
+- **`environment`** (optional, string)
+  - Deployment environment label (`env` in Loki, `env` in Prometheus).
+  - Default: `process.env.NODE_ENV ?? 'development'`.
+- **`extraLabels`** (optional, `Record<string,string>`)
+  - Static labels added to every log line, e.g. `{ region: 'us-east-1', team: 'platform' }`.
+
+## Trace headers
+
+These control how trace IDs are propagated between services.
+
+- **`traceHeader`** (string, default: `'x-loki-trace-id'`)
+- **`parentSpanHeader`** (string, default: `'x-parent-span-id'`)
+
+All internal components – middleware, `LokiHttpService`, and the frontend client – assume these defaults. If you change them:
+
+- Update:
+  - `app.enableCors({ exposedHeaders: [...] })` in `main.ts`.
+  - Any proxies or API gateways that forward headers.
+
+## Log levels & console output
+
+- **`logLevel`** (`'debug' | 'info' | 'warn' | 'error'`, default: `'info'`)
+  Minimum level forwarded to Loki and console.
+
+- **`consoleOutput`** (boolean, default: `false`)
+  - When `true`, logs are also printed to stdout.
+  - When `false`, logs go only to Loki via the internal transport.
+
+- **`jsonConsole`** (boolean, default: `false`)
+  - When `true`, console logs are structured JSON.
+  - When `false`, console logs are colorized + human readable.
+
+**Production tip:**
+Use `consoleOutput: true` only if your platform relies on stdout logs (e.g. Kubernetes log collection). For purely Loki-based setups, it is safe (and cheaper) to keep console output off.
+
+## Loki buffering & retry
+
+These options, control how logs are buffered and retried before being sent to Loki.
+
+- **`lokiBatchInterval`** (number, default: `5000`)
+  Interval in milliseconds between push attempts.
+
+- **`lokiRetries`** (number, default: `3`)
+  Retry attempts per batch on failure (network errors, 5xx responses, timeouts).
+
+- **`lokiBufferSize`** (number, default: `5000`)
+  Maximum number of log entries kept in memory.
+
+- **`bufferLogsWhenUnreachable`** (boolean, default: `false`)
+  - `false` (default): after all retries, failed batches are dropped.
+  - `true`: failed batches are re-queued (up to `lokiBufferSize`) and retried later.
+
+**Production recommendation:**
+
+- For memory-constrained workloads: keep `bufferLogsWhenUnreachable` at `false` so sustained Loki outages cannot cause memory pressure.
+- For critical audit trails where losing logs is unacceptable: set `bufferLogsWhenUnreachable: true` and increase `lokiBufferSize`, monitoring memory via Prometheus.
+
+## Request / response bodies
+
+These options add HTTP body payloads to logs.
+
+- **`logRequestBody`** (boolean, default: `false`)
+- **`logResponseBody`** (boolean, default: `false`, truncated to ~2KB)
+
+Both are useful for debugging but may log sensitive data.
+
+> **Never enable `logRequestBody` or `logResponseBody` in production** unless you have explicit approval and strong data-governance controls.
+
+When either flag is enabled in production, `LokiLoggerService` emits a warning at startup.
+
+## Field redaction
+
+Use `redactFields` to automatically scrub sensitive keys from all log payloads before they reach Loki **or** console.
+
+```ts
+LokiLoggerModule.register({
+  // ...
+  redactFields: ["password", "token", "authorization", "secret", "apiKey"],
+});
+```
+
+- **`redactFields`** (`string[]`, default: `[]`)
+  - Recursive: any key with a matching name at any depth is replaced with `'[REDACTED]'`.
+
+You can hide specific key-value pairs, so even nested objects and arrays are safe.(Recommended for production)
+
+## Trace viewer
+
+These options control the built-in trace viewer API and SPA mounted by `LokiLoggerModule.mountViewer(app)`.
+
+- **`enableTraceViewer`** (boolean, default: `false`)
+  - When `true`, `mountViewer` registers:
+    - `GET {traceViewerPath}` → HTML SPA.
+    - `GET {traceViewerPath}/api/:traceId` → structured JSON trace.
+
+- **`traceViewerPath`** (string, default: `'/_trace'`)
+  - Base path for the viewer and its API.
+
+- **`traceViewerServices`** (string, default: `serviceName`)
+  - Comma‑separated list of service names to query in Loki.
+  - Example: `'auth-service,business-service,gateway'`.
+
+If the viewer is enabled but `traceViewerServices` is left at the default, the module logs a warning that only the current service’s logs will be included in cross-service traces.
+
+## Prometheus metrics
+
+These options power the `/metrics` endpoint and Grafana dashboards.
+
+- **`enableMetrics`** (boolean, default: `false`)
+  - When `true`, `apply(app)` mounts a `/metrics` endpoint on your Express instance.
+
+- **`metricsPath`** (string, default: `'/metrics'`)
+  - Path used by the mounted endpoint.
+
+Metrics include:
+
+- `http_request_duration_seconds` (Histogram) – latency per route/method/status.
+- `http_requests_total` (Counter) – total requests by route/method/status.
+- `http_requests_in_flight` (Gauge) – concurrent requests.
+- Default Node.js process metrics (heap, GC, CPU, event loop, etc.).
+
+See [**Prometheus metrics**](/docs/metrics) for wiring scraping and Grafana dashboards.
+
+## OpenTelemetry / Tempo tracing
+
+Tracing has two parts:
+
+1. **SDK bootstrap** with `initObservability` (before `NestFactory.create`).
+2. **Loki options** that decide whether to prefer OTEL trace/span IDs.
+
+Relevant settings:
+
+- **`enableTracing`** (boolean, default: `false`)
+  - When `true`, the middleware and logger attempt to read the active OTEL span context via `getActiveOtelContext` and reuse its traceId/spanId.
+
+- **`otlpEndpoint`** (string, default: `'http://localhost:4318'`)
+  - Base OTLP HTTP endpoint for `initObservability`.
+
+You still need to call `initObservability({ serviceName, otlpEndpoint })` – see [**OpenTelemetry & Tempo**](/docs/observability-and-otel).
+
+## Multi‑tenancy / API keys
+
+- **`apiKey`** (optional, string)
+  - Sent as the `X-Scope-OrgID` header on every Loki push.
+  - Use this for multi‑tenant Loki deployments or per‑team scoping.
+
+```ts
+LokiLoggerModule.register({
+  serviceName: "payments-api",
+  lokiHost: "https://loki.mycompany.com",
+  apiKey: "team-payments-prod",
+});
+```
+
+You can generate a random ID using:
+
+```bash copy
+node -e "console.log(require('crypto').randomUUID())"
+```
+
+## Async configuration with ConfigService
+
+For real deployments, prefer `registerAsync` to pull values from `.env` / a config service:
+
+```ts
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { LokiLoggerModule } from "@planetmoondrop/centralized-logger";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    LokiLoggerModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        serviceName: config.get<string>("SERVICE_NAME") ?? "my-service",
+        lokiHost: config.get<string>("LOKI_HOST") ?? "http://loki:3100",
+        environment: config.get<string>("NODE_ENV") ?? "development",
+        logLevel: config.get<"debug" | "info" | "warn" | "error">(
+          "LOG_LEVEL",
+          "info",
+        ),
+        enableMetrics: config.get<boolean>("ENABLE_METRICS", true),
+        enableTracing: config.get<boolean>("ENABLE_TRACING", false),
+        apiKey: config.get<string>("LOKI_API_KEY"),
+      }),
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+This pattern mirrors the configuration style used throughout the NestJS ecosystem and keeps your deployment environments fully configurable without code changes.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

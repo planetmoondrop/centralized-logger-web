@@ -1,0 +1,100 @@
+import { Steps, Tabs } from "nextra/components";
+
+# Moondrop Centralized Logger
+
+Bring consistent, cross-service logging, tracing, and metrics to your NestJS micro/services – with a single module and one line of frontend code. It uses progressive JavaScript, is built with and fully supports TypeScript.
+
+Under the hood, [`centralized-logger`](/docs/introduction#packages) is built on a robust HTTP server powered by [`Nest.JS`](https://nestjs.com/), ensuring scalable, reliable, and production-ready request handling.
+
+This library documents the two npm packages that make up the stack.
+
+## Packages
+
+- [`@planetmoondrop/centralized-logger`](/docs/overview/installation/backend) — NestJS module that ships structured logs to Grafana Loki, exposes Prometheus `/metrics`, and integrates with Tempo via OpenTelemetry.
+- [`@planetmoondrop/logger-client`](/docs/overview/installation/frontend) — Axios helper for browsers that keeps `x-loki-trace-id` flowing across frontend to backend calls.
+
+## The problem it solves
+
+In microservice architectures, logs from individual services are scattered, context-free, and impossible to correlate. When a request fails, you're left grep-ing across dozens of log streams trying to reconstruct what happened.
+
+`@planetmoondrop/centralized-logger` eliminates this by:
+
+- Generating a single `traceId` on the first incoming request and propagating it automatically through every downstream service call, every database query, and every log line — with zero manual wiring.
+- Shipping all logs as structured JSON directly to **Grafana Loki** via an in-memory buffer with automatic retries.
+- Exposing **Prometheus `/metrics`** with HTTP request duration histograms, request counters, in-flight gauges, and full Node.js runtime metrics.
+- Integrating with **OpenTelemetry + Tempo** so every Loki log line is click-through-linked to its Tempo trace waterfall.
+- Providing a built-in **Trace Viewer UI** at `/_trace` so you can visualize cross-service request flows directly from your service — no Grafana needed for quick debugging.
+
+---
+
+## Dashboard ready before your coffee gets!
+
+<Steps>
+
+### Install the backend package
+
+Choose the init wizard for the fastest setup, or install it manually.
+
+### Configure your NestJS service
+
+Register `LokiLoggerModule`, call `LokiLoggerModule.apply(app)`, and decide whether to enable metrics and tracing.
+
+### Setup the frontend client
+
+Attach `attachSessionInterceptor` to your Axios instance so `x-loki-trace-id` is preserved from browser to backend.
+
+### Run Docker Compose
+
+Bring up Loki, Tempo, Prometheus, and Grafana for local validation or production-like environments.
+
+</Steps>
+
+## Installation
+
+To get started, you can either scaffold the project with the init wizard (recommended approach), or by [`manual installation`](/docs/overview/installation/backend#backend-manual-install) (both will produce the same outcome).
+To scaffold the project with the init wizard, run the following commands.
+This init wizard will guide you thoroughly install backend package.
+
+From the root of your NestJS project:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+
+```bash copy
+npx -p @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+pnpm dlx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+yarn dlx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+bunx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+## Next steps
+
+- [Installation](/docs/overview/installation/backend) — install packages and follow the production-ready setup order.
+- [Quickstart](/docs/overview/quickstart) — register the module, enable tracing, and start logging requests.
+- [Deployment](/docs/deployment) — run Loki, Tempo, Prometheus, and Grafana with Docker Compose.
+- [Support](/support-us) — help the project grow and see how to support Planet Moondrop.
+
+## Support Us
+
+centralized-logger is MIT-licensed open source. Support its development by [`becoming a sponsor`](/support-us) or contributing code, docs, or feedback.

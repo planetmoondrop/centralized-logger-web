@@ -1,0 +1,107 @@
+import { Steps, Tabs } from "nextra/components";
+
+# Deployment
+
+This page covers how to run the full observability stack (Loki, Tempo, Prometheus, Grafana) and example services using the provided Docker configuration, and how to adapt it to your own environment.
+
+## Deployment flow
+
+<Steps>
+
+### Clone the Docker stack
+
+Use the MIT-licensed Docker stack repository to bootstrap Loki, Tempo, Prometheus, and Grafana.
+
+### Configure environment values
+
+Set Grafana credentials, ports, retention, and the deployment environment label.
+
+### Register your services
+
+Add your apps to `targets.yaml` and point each service at `LOKI_HOST` and `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+### Bring the stack up
+
+Run Docker Compose and validate logs, metrics, and traces in Grafana.
+
+</Steps>
+
+## Clone the stack repository
+
+The production Docker stack lives in the MIT-licensed repository:
+
+- [planetmoondrop/centralized-logger-stack](https://github.com/planetmoondrop/centralized-logger-stack.git)
+
+<Tabs items={['SSH', 'HTTPS']}>
+  <Tabs.Tab>
+
+```bash copy
+git clone git@github.com:planetmoondrop/centralized-logger-stack.git
+cd centralized-logger-stack
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+git clone https://github.com/planetmoondrop/centralized-logger-stack.git
+cd centralized-logger-stack
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+### Environment configuration
+
+Copy .env.example file in root
+
+```bash copy
+cp .env.example .env
+```
+
+Edit `.env` in the Docker stack folder:
+
+- `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` – Grafana login.
+- `GRAFANA_PORT`, `LOKI_PORT`, `PROMETHEUS_PORT`, `TEMPO_*_PORT` – host ports.
+- `ENVIRONMENT` – label used across logs and metrics (`env=production` etc.).
+- `PROMETHEUS_RETENTION` – metrics retention period.
+
+Update `targets.yaml` to list your production services and their ports.
+
+## Clone and configure checklist
+
+<Steps>
+
+### Clone the repository
+
+Use either HTTPS or SSH, depending on how your GitHub access is configured.
+
+### Copy the environment file
+
+Duplicate `env.example` to `.env` and set real values for credentials and retention.
+
+### Register Prometheus targets
+
+Add your service hostnames and ports to `targets.yaml`.
+
+### Start the stack
+
+Run `docker compose up -d` and confirm Grafana, Loki, Tempo, and Prometheus are healthy.
+
+</Steps>
+
+## Cleaning up
+
+To stop and optionally remove data:
+
+```bash copy
+# Stop containers, keep data volumes
+docker compose down
+
+# Stop and delete volumes (Loki, Tempo, Prometheus, Grafana data)
+docker compose down -v
+```
+
+Only run `down -v` in non‑production or when you are sure you can lose logs and metrics.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

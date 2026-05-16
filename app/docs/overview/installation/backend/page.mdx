@@ -1,0 +1,163 @@
+import { Tabs } from "nextra/components";
+
+# Installation
+
+## Requirements
+
+- Node.js 18 or later
+- NestJS >= 9
+
+You can install the backend package either via the **init wizard** or manually.
+
+## Backend: init wizard (recommended)
+
+From the root of your NestJS project:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+
+```bash copy
+npx -p @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+pnpm dlx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+yarn dlx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+bunx @planetmoondrop/centralized-logger planetmoondrop init
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+What the wizard does:
+
+1. **Detects your package manager** (pnpm, yarn, bun, npm).
+2. **Asks for**:
+   - `serviceName` (used as Loki `app` label and Prometheus label).
+   - `lokiHost` (e.g. `http://loki:3100`).
+   - Whether to **enable OpenTelemetry tracing** (Tempo).
+   - Paths to `main.ts` and `app.module.ts`.
+3. **Installs core dependencies** into your project (not just the npx cache):
+   - `@planetmoondrop/centralized-logger`
+   - `winston`
+   - `uuid`
+4. If tracing is enabled, installs optional OTEL packages:
+   - `@opentelemetry/sdk-node`
+   - `@opentelemetry/exporter-trace-otlp-http`
+   - `@opentelemetry/auto-instrumentations-node`
+   - `@opentelemetry/resources`
+   - `@opentelemetry/semantic-conventions`
+
+The wizard uses `--ignore-scripts` for installs where supported to avoid monorepo `postinstall`/husky failures, especially on Windows.
+
+If your project already depends on `@planetmoondrop/centralized-logger`, you can run:
+
+```bash copy
+npx planetmoondrop init
+```
+
+### When `npx planetmoondrop init` works
+
+> `npx planetmoondrop init` **without** the `-p` flag only works when the package is already in your `package.json`. There is **no separate `planetmoondrop` package** on npm – the binary lives inside `@planetmoondrop/centralized-logger`.
+
+## Backend: manual install
+
+If you prefer to wire things yourself:
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+
+```bash copy
+npm install @planetmoondrop/centralized-logger winston uuid
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+pnpm add @planetmoondrop/centralized-logger winston uuid
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+yarn add @planetmoondrop/centralized-logger winston uuid
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+bun add @planetmoondrop/centralized-logger winston uuid
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+Required NestJS peer dependencies (usually already present in your app):
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+
+```bash copy
+npm install @nestjs/common @nestjs/core reflect-metadata rxjs
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+pnpm add @nestjs/common @nestjs/core reflect-metadata rxjs
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+bun add @nestjs/common @nestjs/core reflect-metadata rxjs
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+Optional peers you may want:
+
+- `@nestjs/axios` – to use `LokiHttpModule` / `LokiHttpService` for traced outgoing HTTP calls.
+- `typeorm` – to use the `TypeOrmLokiLogger` adapter.
+- OpenTelemetry SDK packages (if you want Tempo traces):
+  - `@opentelemetry/sdk-node`
+  - `@opentelemetry/exporter-trace-otlp-http`
+  - `@opentelemetry/auto-instrumentations-node`
+  - `@opentelemetry/resources`
+  - `@opentelemetry/semantic-conventions`
+
+## What to do next
+
+1. [Configure backend](/docs/overview/quickstart) — register `LokiLoggerModule`, enable CORS headers, and call `apply(app)`.
+2. [Setup frontend](/docs/overview/installation/frontend) — attach the Axios interceptor so trace IDs continue from the browser.
+3. [Run Docker stack](/docs/deployment) — start Loki, Tempo, Prometheus, and Grafana with Docker Compose.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

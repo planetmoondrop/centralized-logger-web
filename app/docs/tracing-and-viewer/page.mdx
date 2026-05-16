@@ -1,0 +1,142 @@
+# Tracing & Trace Viewer
+
+This page explains how `traceId` and `spanId` flow through your services and how to use the built‑in trace viewer backed by Loki.
+
+## How trace IDs are created and propagated
+
+When `LokiLoggerModule.apply(app)` is called, the module:
+
+1. Attaches middleware that:
+   - Reads `x-loki-trace-id` and `x-parent-span-id` from the incoming request (if present).
+   - Generates new hex `traceId`/`spanId` when needed.
+   - Stores a full `TraceContext` in `AsyncLocalStorage` for the lifetime of the request.
+2. Echoes the headers on the response:
+   - `x-loki-trace-id`
+   - `x-parent-span-id`
+3. Uses that context in:
+   - `LokiLoggerService` (all log lines).
+   - `LokiHttpService` (outgoing HTTP).
+   - `TypeOrmLokiLogger` (database logs).
+
+At a high level, the request flow looks like this:
+
+1. The frontend sends `x-loki-trace-id` to the gateway.
+2. The gateway continues that trace and forwards both `x-loki-trace-id` and `x-parent-span-id` to downstream services.
+3. Each NestJS service writes structured logs to Loki with the same `traceId`.
+4. If OpenTelemetry is enabled, each service also exports spans to Tempo.
+5. The built-in trace viewer queries Loki by `traceId` and reconstructs the full request journey across services.
+
+## Trace context API
+
+Inside your code, you can access the active trace using helpers from `trace-context.ts`:
+
+```ts
+import {
+  getCurrentTrace,
+  getCurrentTraceId,
+  getCurrentSpanId,
+  addTraceTag,
+  nextSequence,
+} from "@planetmoondrop/centralized-logger";
+
+const trace = getCurrentTrace(); // undefined outside a request
+const traceId = getCurrentTraceId(); // 'no-trace' outside a request
+const spanId = getCurrentSpanId(); // 'no-span' outside a request
+```
+
+- **`addTraceTag(key, value)`**
+  Attaches arbitrary key–value tags to the current request; they are merged into all subsequent log lines.
+
+```ts
+addTraceTag("orderId", order.id);
+addTraceTag("tenant", tenantId);
+```
+
+These tags become top‑level JSON fields in Loki, which makes them first‑class for LogQL queries and Grafana dashboards.
+
+## Log types
+
+Logs carry a `logType` field that helps the trace viewer group events:
+
+- `http_in` – incoming HTTP request.
+- `http_in_res` – outgoing HTTP response.
+- `http_out` – outgoing HTTP calls via `LokiHttpService`.
+- `db` – TypeORM SQL logs via `TypeOrmLokiLogger`.
+- `interceptor` – handler entry/exit via the global interceptor.
+- `service` – manual logs and `@Log` decorator output.
+- `event` – domain events logged via `logger.event(...)`.
+
+The viewer UI and Grafana dashboards rely on this to build the waterfall.
+
+## Enabling the trace viewer
+
+### 1. Configure options
+
+In your module registration:
+
+```ts
+LokiLoggerModule.register({
+  serviceName: "backend",
+  lokiHost: "http://loki:3100",
+  enableTraceViewer: true,
+  traceViewerPath: "/_trace",
+  traceViewerServices: "backend,auth-service,customer-support",
+});
+```
+
+- `enableTraceViewer: true` – turn on the viewer.
+- `traceViewerPath` – base path (default `/_trace`).
+- `traceViewerServices` – comma‑separated list of services to query in Loki.
+
+If `enableTraceViewer` is `true` but `traceViewerServices` is not set, only the current service’s logs are included and a warning is logged on startup.
+
+### 2. Mount the viewer
+
+In `main.ts`, call:
+
+```ts
+LokiLoggerModule.mountViewer(app);
+```
+
+This registers:
+
+- `GET /_trace` → HTML SPA that visualizes traces.
+- `GET /_trace/api/:traceId` → JSON trace, used by the SPA and integrators.
+
+### 3. Querying a trace
+
+The underlying `TraceViewerService` uses Loki’s HTTP API with a LogQL query:
+
+```txt
+{app=~"backend|auth-service|customer-support"} | json | traceId="<TRACE_ID>"
+```
+
+The service:
+
+1. Fetches JSON logs from Loki for the last 24 hours.
+2. Groups them by `spanId`.
+3. Infers span trees via `parentSpanId`.
+4. Computes `startTime`, `endTime`, and `durationMs` from log timestamps.
+
+The `/api/:traceId` endpoint returns:
+
+```ts
+interface TraceResult {
+  traceId: string;
+  startTime: string;
+  durationMs: number;
+  services: string[];
+  spans: Span[];
+  rootSpans: Span[];
+}
+```
+
+Each `Span` includes its own logs (with `logType`, `message`, `duration`, `statusCode`, etc.) so UIs can reconstruct the full journey.
+
+## Production notes
+
+- Make sure your Loki retention (`retention_period` in `loki-config.yaml`) is aligned with how long you expect traces to be viewable.
+- The viewer queries up to 24h of data per request; extremely high‑volume systems may want to tune `max_entries_limit_per_query` in Loki.
+- If you expose the viewer publicly, protect it with auth in your gateway or API gateway layer – the library itself does not implement authentication.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

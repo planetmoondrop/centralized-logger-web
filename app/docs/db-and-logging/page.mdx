@@ -1,0 +1,86 @@
+# TypeORM & database logs
+
+`TypeOrmLokiLogger` routes all TypeORM SQL logs through `LokiLoggerService` so queries, slow queries, and errors are tied to the same `traceId` as the HTTP request that triggered them.
+
+## Setup
+
+Install `typeorm` in your service:
+
+```bash copy
+npm install typeorm
+```
+
+Then wire the logger in your TypeORM config:
+
+```ts
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { LokiLoggerService, TypeOrmLokiLogger } from '@planetmoondrop/centralized-logger';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRootAsync({
+      inject: [LokiLoggerService],
+      useFactory: (logger: LokiLoggerService) => ({
+        // ...your usual TypeORM options
+        type: 'postgres',
+        url: process.env.DATABASE_URL,
+        // ...
+
+        logger: TypeOrmLokiLogger.create(logger),
+        logging: true,
+      }),
+    }),
+  ],
+})
+export class DatabaseModule {}
+```
+
+`TypeOrmLokiLogger.create(logger)`:
+
+- Attempts to read `typeorm/package.json` to ensure `^0.3.x`.
+- Logs a warning (but still returns an instance) if the version is older or `typeorm` is missing.
+
+## What gets logged
+
+`TypeOrmLokiLogger` implements the TypeORM logger contract and forwards events to `LokiLoggerService` with `logType: 'db'` and context `TypeORM` (or a more specific context for schema/migration logs).
+
+- **Queries** – `logQuery`:
+  - Message: `"DB query"`.
+  - Fields: truncated `query` and sanitized `parameters`.
+
+- **Slow queries** – `logQuerySlow`:
+  - Message: `"DB slow query detected"`.
+  - Fields: `durationMs`, `thresholdMs` (default 1000ms), truncated `query`, sanitized `parameters`.
+
+- **Errors** – `logQueryError`:
+  - Message: `"DB query error"`.
+  - Fields: `error` message, filtered `stack`, truncated `query`, sanitized `parameters`.
+
+- **Schema build & migrations**:
+  - `logSchemaBuild` and `logMigration` log debug/info messages under separate contexts (`TypeORM:Schema`, `TypeORM:Migration`).
+
+### Parameter sanitization
+
+To avoid logging large payloads verbatim:
+
+- Any string parameter longer than 40 characters is replaced with `'[REDACTED]'`.
+- You can still store full payloads in your own domain logs if required (and acceptable from a compliance standpoint).
+
+## Traces and DB spans
+
+Because `TypeOrmLokiLogger` uses `LokiLoggerService.logWithType('db', ...)` and `LokiLoggerService` reads the `TraceContext` from `AsyncLocalStorage`, every DB log automatically includes:
+
+- `traceId`
+- `spanId`
+- `service`
+- `path`
+- `method`
+- `userId` (when available)
+
+In the trace viewer and Grafana dashboards this allows you to:
+
+- See all DB activity for a given request.
+- Filter by `logType="db"` to focus on database performance and errors.
+
+Need help or want to support the project? Visit [Support us](/docs/support).
+

@@ -1,0 +1,113 @@
+# Security & operations
+
+This page summarizes the operational and security‑related behaviors of the logger and the bundled observability stack.
+
+## Sensitive data & redaction
+
+Logs often contain identifiers, payloads, and user data. The library provides several tools to control what reaches Loki:
+
+- **`redactFields`** – automatically replaces any matching keys in log payloads with `'[REDACTED]'`, recursively.
+- **`logRequestBody` / `logResponseBody`** – disabled by default; when enabled they can include full bodies in logs.
+
+**Recommendations:**
+
+- Always configure `redactFields` in production, at minimum:
+
+```ts
+redactFields: ['password', 'token', 'authorization', 'secret', 'apiKey'],
+```
+
+- Keep `logRequestBody` and `logResponseBody` **off** in production; use them only temporarily in tightly controlled environments.
+- If you must log sensitive fields for debugging, prefer:
+  - Logging hashes or truncated values.
+  - Logging non‑sensitive identifiers (IDs, correlation keys) instead of raw payloads.
+
+## Loki availability & buffering
+
+When Loki is unreachable, the transport:
+
+- Buffers log events in memory up to `lokiBufferSize` (default ~5000 entries).
+- Retries pushes with exponential backoff up to `lokiRetries` times.
+
+If all retries fail:
+
+- With `bufferLogsWhenUnreachable: false` (default), the failed batch is dropped.
+- With `bufferLogsWhenUnreachable: true`, the batch is re‑queued (subject to `lokiBufferSize`).
+
+> In both cases, the application continues to run and does not block on logging.
+
+**Recommendations:**
+
+- For high‑traffic or memory‑sensitive workloads, keep `bufferLogsWhenUnreachable` disabled and rely on metrics/alerts to detect outages.
+- For audit‑heavy systems that tolerate higher memory usage, enable buffering and monitor RAM with Prometheus.
+
+## Multi‑tenancy
+
+If your Loki deployment is multi‑tenant, or if you want per‑team scoping, use the `apiKey` option:
+
+```ts
+LokiLoggerModule.register({
+  // ...
+  apiKey: "team-payments-prod", // sent as X-Scope-OrgID
+});
+```
+
+The value is sent on every push as `X-Scope-OrgID`. Make sure it is treated as a secret in your configuration pipeline.
+
+## Metrics endpoint exposure
+
+The Prometheus `/metrics` endpoint reveals:
+
+- Process information (heap size, GC, CPU).
+- HTTP routes, status codes, and request rates.
+
+Treat it as an **internal‑only** endpoint:
+
+- Restrict access using network policy, firewall rules, or an API gateway.
+- Avoid exposing `/metrics` on public load balancers without authentication.
+
+## Grafana hardening
+
+The `docker/.env.example` file defaults to:
+
+- `GRAFANA_ADMIN_USER=admin`
+- `GRAFANA_ADMIN_PASSWORD=changeme`
+
+In any shared or production environment:
+
+- Change the admin password.
+- Consider disabling anonymous access and using your SSO provider instead.
+
+## Log retention
+
+Loki and Tempo defaults in the provided config:
+
+- Loki retention: **30 days** (`retention_period: 720h`).
+- Tempo retention: **30 days** (`block_retention: 720h`).
+
+Adjust based on:
+
+- Compliance requirements.
+- Storage capacity.
+- How far back you need traces and logs for debugging and audits.
+
+## Health & readiness
+
+On startup `LokiLoggerService`:
+
+- Performs a non‑blocking readiness probe against `lokiHost + '/ready'`.
+- Logs a warning if Loki is not reachable or the health endpoint returns an error code.
+
+Even when Loki is unreachable:
+
+- Application startup is not blocked.
+- Logs may be buffered or dropped depending on configuration.
+
+Use:
+
+- Prometheus alerts for:
+  - Failed /metrics scrapes.
+  - Sudden drops in log volume.
+- Grafana for dashboards that correlate logs, traces, and metrics.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

@@ -1,0 +1,113 @@
+# Troubleshooting
+
+Common issues and how to debug them in production.
+
+## Logs not appearing in Loki
+
+### 1. Check Loki readiness
+
+- Verify Loki is reachable:
+
+```bash copy
+curl -f http://localhost:3100/ready
+```
+
+- If you see warnings like:
+
+> `Loki not reachable at http://loki:3100 — logs will be dropped until Loki is available`
+
+in your service logs, confirm:
+
+- `lokiHost` is correct for the environment.
+- Network rules allow connections from your service to Loki.
+
+### 2. Confirm labels and queries
+
+In Grafana’s Explore view:
+
+- Use a simple LogQL query first:
+
+```logql
+{app="backend"} | json
+```
+
+- If nothing appears:
+  - Check that `serviceName` in `LokiLoggerModule.register` matches `app` in your dashboards and queries.
+  - Confirm retention (30 days by default in the provided config) has not expired.
+
+## No trace IDs on logs
+
+If logs appear but lack `traceId`/`spanId`:
+
+- Ensure `LokiLoggerModule.apply(app)` is called exactly once in `main.ts`.
+- Confirm that your HTTP requests are routed through the Express adapter used by Nest (no custom server bypassing the middleware).
+- Verify that your logs are emitted inside a request scope:
+  - Logs from background jobs or cron tasks do not have a request `TraceContext` and therefore will not have `traceId`/`spanId` unless you create one explicitly.
+
+## Frontend not linked to backend traces
+
+Symptoms:
+
+- Frontend requests do not show up in the same trace as backend logs.
+- `x-loki-trace-id` header missing from requests.
+
+Checklist:
+
+1. `attachSessionInterceptor` is attached to the same Axios instance used for API calls.
+2. The backend exposes headers via CORS:
+
+```ts
+app.enableCors({
+  exposedHeaders: ['x-loki-trace-id', 'x-parent-span-id'],
+});
+```
+
+3. Gateway and downstream services use the same `traceHeader` and `parentSpanHeader` settings.
+4. Browser devtools → Network → Request headers show `x-loki-trace-id` present.
+
+## Trace viewer returns “Trace not found”
+
+The `/ _trace /api/:traceId` endpoint can return 404 when:
+
+- The trace is older than Loki retention.
+- No logs exist for that trace ID (typo or service not using the logger yet).
+- `traceViewerServices` is misconfigured and does not include all relevant services.
+
+Steps:
+
+1. Confirm the ID exists in Loki with:
+
+```logql
+{app="backend"} | json | traceId="<TRACE_ID>"
+```
+
+2. Update `traceViewerServices` to include all services for the journey:
+
+```ts
+traceViewerServices: 'backend,auth-service,customer-support',
+```
+
+## /metrics endpoint not found
+
+If Prometheus reports 404 scraping `/metrics`:
+
+- Verify `enableMetrics: true` in `LokiLoggerModule.register`.
+- Check that the `metricsPath` matches what Prometheus is scraping:
+  - Default path is `/metrics`.
+  - In Docker, `prometheus.yml` uses `metrics_path: '/metrics'`.
+
+## High log volume or Loki performance issues
+
+If Loki queries become slow or return “exceeded max entries”, you can:
+
+- Tighten log level (`logLevel: 'info'` or `'warn'` in production).
+- Disable noisy logs (e.g. avoid `@Log({ args: true })` on very hot paths).
+- Adjust Loki configuration:
+  - `max_entries_limit_per_query`
+  - `split_queries_by_interval`
+  - Retention and compaction settings.
+
+Use the provided Grafana dashboards (e.g. per‑service log volume and query performance) to identify heavy services and endpoints.
+
+Need help or want to support the project? Visit [Support us](/docs/support).
+

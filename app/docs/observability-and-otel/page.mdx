@@ -1,0 +1,134 @@
+# OpenTelemetry & Tempo
+
+The logger integrates with Grafana Tempo via OpenTelemetry so your logs and traces share the same `traceId` and can be cross‑linked in Grafana.
+
+## When you need OTEL
+
+You should enable OTEL + Tempo when:
+
+- You want a **span waterfall view** of your services in Grafana.
+- You want to correlate Loki log lines with individual spans.
+- You already run Tempo or are deploying the included Docker stack.
+
+If you only need structured logs in Loki, you can skip OTEL and keep `enableTracing: false`.
+
+## 1. Start Tempo (Docker)
+
+If you are using the provided stack, the Tempo service is defined in:
+
+- `docker/docker-compose.yml`
+- `docker/services/tempo/tempo-config.yaml`
+
+Start it:
+
+```bash copy
+cd docker
+docker compose up -d
+```
+
+Tempo exposes:
+
+- HTTP API: `http://localhost:3200`
+- OTLP gRPC: `0.0.0.0:4317`
+- OTLP HTTP: `0.0.0.0:4318`
+
+## 2. Bootstrap the OTEL SDK
+
+In each NestJS service that should emit traces, call `initObservability` **before** `NestFactory.create`.
+
+```ts
+// src/planetmoondrop/tracing.ts
+import { initObservability } from '@planetmoondrop/centralized-logger';
+
+initObservability({
+  serviceName: 'backend',
+  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://tempo:4318',
+  environment: process.env.NODE_ENV ?? 'development',
+});
+```
+
+The CLI wizard can generate this file and import it automatically at the top of `main.ts`. If you do it manually, ensure it is the **first import**:
+
+```ts
+// src/main.ts
+import './planetmoondrop/tracing'; // must be first – installs OTEL hooks
+
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+// ...
+```
+
+### What `initObservability` does
+
+At runtime it:
+
+1. Dynamically requires OTEL packages (kept as optional peers):
+   - `@opentelemetry/sdk-node`
+   - `@opentelemetry/exporter-trace-otlp-http`
+   - `@opentelemetry/auto-instrumentations-node`
+   - `@opentelemetry/resources`
+   - `@opentelemetry/semantic-conventions`
+2. Creates a `NodeSDK` with:
+   - A `Resource` that sets service name and environment labels.
+   - An `OTLPTraceExporter` pointing to `${otlpEndpoint}/v1/traces`.
+   - Auto‑instrumentations for HTTP, Express, Pg, MySQL, MongoDB, Redis, etc.
+3. Starts the SDK and registers graceful shutdown handlers for `SIGTERM`/`SIGINT`.
+
+If any OTEL package is missing, it logs a warning and skips tracing without breaking your application.
+
+## 3. Tell the logger to reuse OTEL trace IDs
+
+Enable tracing at the Loki config level:
+
+```ts
+LokiLoggerModule.register({
+  serviceName: 'backend',
+  lokiHost: 'http://loki:3100',
+  enableTracing: true,
+});
+```
+
+With `enableTracing: true`:
+
+- Incoming `traceId` and `spanId` are first resolved from the active OTEL span context via `getActiveOtelContext`.
+- If no span is active, the middleware falls back to the HTTP headers and finally to freshly generated hex IDs.
+
+This ensures:
+
+- **Tempo spans** and **Loki logs** share the same 32‑char hex `traceId`.
+- You can click from a Loki log to a Tempo trace (using Grafana’s correlations and dashboards).
+
+## 4. Environment variables
+
+Using the Docker examples, each service sets:
+
+```yaml
+environment:
+  NODE_ENV: development
+  LOKI_HOST: http://loki:3100
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+```
+
+These map directly to:
+
+- `LokiLoggerOptions.lokiHost`
+- `ObservabilityOptions.otlpEndpoint`
+- `LokiLoggerOptions.environment` / OTEL resource deployment environment.
+
+## Failure modes
+
+- **Tempo down** – OTEL exporter failures do not crash the app; spans may be dropped. Logs still go to Loki.
+- **Missing OTEL packages** – a console warning is printed and tracing is disabled for that service.
+- **Mis‑matched service names** – if `serviceName` differs between `initObservability` and `LokiLoggerModule.register`, Grafana dashboards and Tempo traces will not line up cleanly.
+
+## Summary checklist
+
+For each service that should participate in traces:
+
+1. Set `LOKI_HOST` and `OTEL_EXPORTER_OTLP_ENDPOINT` environment variables.
+2. Import and call `initObservability` before `NestFactory.create`.
+3. Configure `LokiLoggerModule.register({ enableTracing: true, ... })`.
+4. Call `LokiLoggerModule.apply(app)` and (optionally) `LokiLoggerModule.mountViewer(app)`.
+
+Need help or want to support the project? Visit [Support us](/docs/support).
+

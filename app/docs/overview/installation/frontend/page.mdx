@@ -1,0 +1,104 @@
+import { Tabs } from "nextra/components";
+
+# Frontend client
+
+`@planetmoondrop/logger-client` is a tiny helper that keeps `x-loki-trace-id` flowing across browser → backend calls using Axios.
+
+It requires no configuration – just attach it to your Axios instance once at startup.
+
+On the frontend (browser / React / React Native / Next.js):
+
+<Tabs items={['npm', 'pnpm', 'yarn', 'bun']}>
+  <Tabs.Tab>
+
+```bash copy
+npm install @planetmoondrop/logger-client axios
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+pnpm add @planetmoondrop/logger-client axios
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+yarn add @planetmoondrop/logger-client axios
+```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```bash copy
+bun add @planetmoondrop/logger-client axios
+```
+
+  </Tabs.Tab>
+</Tabs>
+
+The client has a single peer dependency:
+
+- `axios >= 0.21.0`
+
+## Basic usage
+
+```ts
+import axios from "axios";
+import { attachSessionInterceptor } from "@planetmoondrop/logger-client";
+
+export const api = axios.create({
+  baseURL: "https://api.example.com",
+});
+
+// Attach once at app startup (e.g. in a Next.js custom client or React root).
+const { requestId, responseId } = attachSessionInterceptor(api);
+```
+
+After this:
+
+- Every response that includes `x-loki-trace-id` stores the value in session‑scoped storage.
+- Every outgoing request includes the current `x-loki-trace-id` header.
+
+On the backend, `LokiLoggerModule` reads the header and continues the same trace across services.
+
+## How it works
+
+1. Picks a storage backend:
+   - Browser: `sessionStorage` (via `BrowserSessionStorage`).
+   - Non‑browser (SSR/Node): in‑memory `Map` (`MemoryStorage`).
+2. Seeds a 32‑char random hex ID if none exists.
+3. Installs two Axios interceptors:
+   - **Request interceptor**
+     - Reads the stored trace ID.
+     - Injects it as `x-loki-trace-id`.
+   - **Response interceptor**
+     - Reads `x-loki-trace-id` from response headers.
+     - If present, overwrites the stored trace ID with the backend‑assigned value.
+
+This ensures:
+
+- The **first** outgoing request already carries a trace ID (even before the backend sends one).
+- Once the backend generates its own ID, it becomes the canonical value.
+- A same‑tab refresh reuses the existing trace ID (because `sessionStorage` survives refreshes).
+
+## Backend requirements
+
+For the correlation to work:
+
+- Your backend must:
+  - Use `LokiLoggerModule.apply(app)`.
+  - Keep `traceHeader` at the default `'x-loki-trace-id'` (or update both sides consistently).
+  - Expose `x-loki-trace-id` and `x-parent-span-id` using `app.enableCors({ exposedHeaders: [...] })`.
+
+With that in place, frontend sessions show up as the **first span** in a Loki/Tempo trace, and all gateway + downstream logs share the same `traceId`.
+
+## What to do next
+
+1. [Configure backend](/docs/quickstart) — register `LokiLoggerModule`, enable CORS headers, and call `apply(app)`.
+2. [Setup frontend](/docs/frontend-client) — attach the Axios interceptor so trace IDs continue from the browser.
+3. [Run Docker stack](/docs/deployment) — start Loki, Tempo, Prometheus, and Grafana with Docker Compose.
+
+Need help or want to support the project? Visit [Support us](/docs/support).

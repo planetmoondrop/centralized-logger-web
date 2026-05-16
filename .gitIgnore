@@ -1,0 +1,8 @@
+node_modules
+.next
+.vscode
+public/_pagefind
+
+.env
+*.env
+*.env.*
