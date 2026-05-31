@@ -13,8 +13,11 @@ npm install typeorm
 Then wire the logger in your TypeORM config:
 
 ```ts
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { LokiLoggerService, TypeOrmLokiLogger } from '@planetmoondrop/centralized-logger';
+import { TypeOrmModule } from "@nestjs/typeorm";
+import {
+  LokiLoggerService,
+  TypeOrmLokiLogger,
+} from "@planetmoondrop/centralized-logger";
 
 @Module({
   imports: [
@@ -22,7 +25,7 @@ import { LokiLoggerService, TypeOrmLokiLogger } from '@planetmoondrop/centralize
       inject: [LokiLoggerService],
       useFactory: (logger: LokiLoggerService) => ({
         // ...your usual TypeORM options
-        type: 'postgres',
+        type: "postgres",
         url: process.env.DATABASE_URL,
         // ...
 
@@ -83,4 +86,3 @@ In the trace viewer and Grafana dashboards this allows you to:
 - Filter by `logType="db"` to focus on database performance and errors.
 
 Need help or want to support the project? Visit [Support us](/docs/support).
-

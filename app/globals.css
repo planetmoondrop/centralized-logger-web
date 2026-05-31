@@ -24,8 +24,8 @@ html:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
-    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, "Liberation Mono", "Courier New", monospace;
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
   --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
@@ -40,14 +40,15 @@ html:root {
 html {
   /* Nextra typesetting uses `--x-font-sans` from its theme */
   --x-font-sans:
-    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, "Liberation Mono", "Courier New", monospace;
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--x-font-sans);
+  overflow-x: hidden;
 }
 
 h1,
@@ -95,12 +96,81 @@ button:focus-visible,
 }
 
 ::selection {
-  background: rgba(250, 165, 108, 0.35);
-  color: var(--foreground);
+  background: var(--foreground);
+  color: white;
 }
 
 /* Highlighted text (e.g. <mark>) uses the accent */
 mark {
   background: #ededed !important;
   color: #1b1b1b !important;
+}
+
+::-webkit-scrollbar {
+  display: none;
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #888888;
+}
+
+/* global.css */
+[data-nextra-nav-container] {
+  z-index: 9999;
+}
+
+/* or target the mobile menu overlay */
+.nextra-nav-container-blur {
+  z-index: 9998;
+}
+
+.nextra-sidebar-container {
+  z-index: 9999 !important;
+}
+
+/* Adding float keyframe animation for FinalCTA floating dots */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-10px) translateX(5px);
+  }
+  50% {
+    transform: translateY(-5px) translateX(-5px);
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px);
+  }
+}
+
+/* Adding infinite scroll keyframe animations for testimonials */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }

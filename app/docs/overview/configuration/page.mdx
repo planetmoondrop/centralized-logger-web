@@ -198,10 +198,7 @@ import { LokiLoggerModule } from "@planetmoondrop/centralized-logger";
         serviceName: config.get<string>("SERVICE_NAME") ?? "my-service",
         lokiHost: config.get<string>("LOKI_HOST") ?? "http://loki:3100",
         environment: config.get<string>("NODE_ENV") ?? "development",
-        logLevel: config.get<"debug" | "info" | "warn" | "error">(
-          "LOG_LEVEL",
-          "info",
-        ),
+        logLevel: config.get<"debug" | "info" | "warn" | "error">("LOG_LEVEL", "info"),
         enableMetrics: config.get<boolean>("ENABLE_METRICS", true),
         enableTracing: config.get<boolean>("ENABLE_TRACING", false),
         apiKey: config.get<string>("LOKI_API_KEY"),

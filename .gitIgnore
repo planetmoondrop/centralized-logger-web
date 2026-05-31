@@ -6,3 +6,4 @@ public/_pagefind
 .env
 *.env
 *.env.*
+tsconfig.tsbuildinfo

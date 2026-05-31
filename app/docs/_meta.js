@@ -11,4 +11,5 @@ export default {
   "observability-and-otel": "OpenTelemetry & Tempo",
   "security-and-operations": "Security & operations",
   troubleshooting: "Troubleshooting",
+  "support-us": "Support Us",
 };

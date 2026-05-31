@@ -38,12 +38,12 @@ In each NestJS service that should emit traces, call `initObservability` **befor
 
 ```ts
 // src/planetmoondrop/tracing.ts
-import { initObservability } from '@planetmoondrop/centralized-logger';
+import { initObservability } from "@planetmoondrop/centralized-logger";
 
 initObservability({
-  serviceName: 'backend',
-  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://tempo:4318',
-  environment: process.env.NODE_ENV ?? 'development',
+  serviceName: "backend",
+  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? "http://tempo:4318",
+  environment: process.env.NODE_ENV ?? "development",
 });
 ```
 
@@ -51,10 +51,10 @@ The CLI wizard can generate this file and import it automatically at the top of 
 
 ```ts
 // src/main.ts
-import './planetmoondrop/tracing'; // must be first – installs OTEL hooks
+import "./planetmoondrop/tracing"; // must be first – installs OTEL hooks
 
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
 // ...
 ```
 
@@ -82,8 +82,8 @@ Enable tracing at the Loki config level:
 
 ```ts
 LokiLoggerModule.register({
-  serviceName: 'backend',
-  lokiHost: 'http://loki:3100',
+  serviceName: "backend",
+  lokiHost: "http://loki:3100",
   enableTracing: true,
 });
 ```
@@ -131,4 +131,3 @@ For each service that should participate in traces:
 4. Call `LokiLoggerModule.apply(app)` and (optionally) `LokiLoggerModule.mountViewer(app)`.
 
 Need help or want to support the project? Visit [Support us](/docs/support).
-

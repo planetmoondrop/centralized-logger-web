@@ -58,7 +58,7 @@ Checklist:
 
 ```ts
 app.enableCors({
-  exposedHeaders: ['x-loki-trace-id', 'x-parent-span-id'],
+  exposedHeaders: ["x-loki-trace-id", "x-parent-span-id"],
 });
 ```
 
@@ -110,4 +110,3 @@ If Loki queries become slow or return “exceeded max entries”, you can:
 Use the provided Grafana dashboards (e.g. per‑service log volume and query performance) to identify heavy services and endpoints.
 
 Need help or want to support the project? Visit [Support us](/docs/support).
-

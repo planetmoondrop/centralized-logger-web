@@ -6,10 +6,9 @@ import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style.css";
 import "./globals.css";
 import { Footer } from "@/components/common/footer";
-// import { DiscordLogoIcon } from "@phosphor-icons/react";
 
 export const metadata: Metadata = {
-  title: "Moondrop - Centralized Logger",
+  title: "Moondrop - Centralized Logger | Observability",
   description: "",
   keywords: [
     "centralized logger",
@@ -46,15 +45,11 @@ const navbar = (
   <Navbar
     logo={<b className="font-heading">MOONDROP</b>}
     chatLink="https://discord.gg/FPz2P2FM"
-  // chatIcon={<DiscordLogoIcon weight="fill" className="h-4 w-4 text-(--color-baltic-sea-500)" />}
+    className="z-9999"
   />
 );
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       // Not required, but good for SEO
@@ -67,16 +62,16 @@ export default async function RootLayout({
     >
       <Head
       // ... Your additional head options
-      >
-      </Head>
+      ></Head>
       <body>
         <Layout
+          darkMode={false}
           copyPageButton={false}
           banner={banner}
           navbar={navbar}
           pageMap={await getPageMap()}
           footer={<Footer />}
-          editLink={false}
+          editLink={true}
           feedback={{
             content: <span className="text-[#faa56c]">Question? Give us feedback</span>,
             link: "https://discord.gg/FPz2P2FM",
@@ -85,7 +80,7 @@ export default async function RootLayout({
         >
           {children}
         </Layout>
-      </body >
-    </html >
+      </body>
+    </html>
   );
 }

@@ -100,10 +100,7 @@ You can also shorten the injection with the `@InjectLogger()` decorator:
 
 ```ts
 import { Injectable } from "@nestjs/common";
-import {
-  InjectLogger,
-  LokiLoggerService,
-} from "@planetmoondrop/centralized-logger";
+import { InjectLogger, LokiLoggerService } from "@planetmoondrop/centralized-logger";
 
 @Injectable()
 export class PaymentsService {
@@ -164,7 +161,7 @@ export class OrdersService {
 
   async validateUser(userId: string) {
     const res = await firstValueFrom(
-      this.http.get(`http://auth-service/api/users/${userId}`),
+      this.http.get(`http://auth-service/api/users/${userId}`)
     );
     return res.data;
   }
