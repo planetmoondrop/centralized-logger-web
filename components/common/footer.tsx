@@ -19,9 +19,10 @@ export function Footer() {
                 Planet Moondrop
               </span>
             </div>
-            <p className="mt-4 text-sm text-(--color-baltic-sea-500)">
+            <p className="mt-4 text-sm text-(--color-baltic-sea-500) max-w-xs sm:max-w-none wrap-break-words">
               Open-source observability for the next generation of microservices.
             </p>
+
             <p className="text-sm text-[#faa56c]">From developers, for developers.</p>
             <div className="mt-6 flex items-center gap-3">
               <Link
