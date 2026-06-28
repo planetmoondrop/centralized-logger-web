@@ -1,3 +1,8 @@
+---
+title: TypeORM & Database Logs
+description: Route TypeORM SQL logs through Loki with trace correlation using TypeOrmLokiLogger.
+---
+
 # TypeORM & database logs
 
 `TypeOrmLokiLogger` routes all TypeORM SQL logs through `LokiLoggerService` so queries, slow queries, and errors are tied to the same `traceId` as the HTTP request that triggered them.

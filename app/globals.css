@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #1b1b1b;
@@ -80,6 +81,71 @@ a:focus-visible {
 /* Filled hover state: global link hover would keep accent text on orange bg */
 a.home-hero-cta:hover {
   color: #1b1b1b !important;
+}
+.changelog h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.changelog h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
+.changelog h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+}
+.changelog ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+.changelog li {
+  margin: 0.25rem 0;
+  line-height: 1.6;
+}
+.changelog p {
+  margin: 0.75rem 0;
+  line-height: 1.7;
+}
+.changelog code {
+  background: #1e1e1e;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.8em;
+  word-break: break-word;
+}
+.changelog pre {
+  background: #1e1e1e;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1rem 0;
+  max-width: 100%;
+}
+.changelog pre code {
+  word-break: normal;
+}
+.changelog a {
+  color: #f97316;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+@media (max-width: 640px) {
+  .changelog h1 {
+    font-size: 1.4rem;
+  }
+  .changelog h2 {
+    font-size: 1.15rem;
+  }
+  .changelog h3 {
+    font-size: 1rem;
+  }
 }
 
 button:hover,

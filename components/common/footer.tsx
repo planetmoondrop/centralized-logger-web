@@ -1,5 +1,8 @@
-import { Cube, GithubLogo, DiscordLogo } from "@phosphor-icons/react/dist/ssr";
+import { GithubLogo, DiscordLogo } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import Link from "next/link";
+import Logo from '@/public/assets/logo.svg'
+
 
 export function Footer() {
   return (
@@ -9,8 +12,8 @@ export function Footer() {
           {/* Brand column */}
           <div className="min-w-xl lg:max-w-xl">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-none bg-(--color-baltic-sea-800)">
-                <Cube weight="fill" className="h-5 w-5 text-(--color-baltic-sea-400)" />
+              <div className="flex h-10 w-auto items-center justify-center rounded-none bg-(--color-baltic-sea-800)">
+                <Image src={Logo} alt="Moondrop" className="h-10 w-auto" width={10} height={10} />
               </div>
               <span className="text-xl font-semibold text-(--color-baltic-sea-300)">
                 Planet Moondrop
@@ -60,7 +63,7 @@ export function Footer() {
 
                 <li>
                   <Link
-                    href="#"
+                    href="/changelog"
                     className="text-sm text-(--color-baltic-sea-500) transition-colors hover:text-(--color-keppel-400)"
                   >
                     Changelog
@@ -139,7 +142,9 @@ export function Footer() {
             <span className="h-2 w-2 animate-pulse rounded-none bg-(--color-keppel-400)" />
             <span className="text-xs text-(--color-baltic-sea-500)">
               Developed with ❤️ by{" "}
-              <span className="text-[#faa56c]">Planet Moondrop</span>
+              <Link href="https://a-ameerofficials-projects.vercel.app" target="_blank">
+                <span className="text-[#faa56c]">Planet Moondrop</span>
+              </Link>
             </span>
           </div>
         </div>

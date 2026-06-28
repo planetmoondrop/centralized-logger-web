@@ -1,3 +1,8 @@
+---
+title: Frontend
+description: Install and use @planetmoondrop/logger-client to propagate trace IDs from the browser.
+---
+
 import { Tabs } from "nextra/components";
 
 # Frontend client
@@ -97,8 +102,8 @@ With that in place, frontend sessions show up as the **first span** in a Loki/Te
 
 ## What to do next
 
-1. [Configure backend](/docs/quickstart) — register `LokiLoggerModule`, enable CORS headers, and call `apply(app)`.
-2. [Setup frontend](/docs/frontend-client) — attach the Axios interceptor so trace IDs continue from the browser.
+1. [Configure backend](/docs/overview/quickstart) — register `LokiLoggerModule`, enable CORS headers, and call `apply(app)`.
+2. Attach the Axios interceptor so trace IDs continue from the browser.
 3. [Run Docker stack](/docs/deployment) — start Loki, Tempo, Prometheus, and Grafana with Docker Compose.
 
 Need help or want to support the project? Visit [Support us](/docs/support-us).
