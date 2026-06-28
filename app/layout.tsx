@@ -40,7 +40,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const banner = <Banner storageKey="some-key">Nextra 4.0 is released 🎉</Banner>;
+// const banner = <Banner storageKey="some-key">Nextra 4.0 is released 🎉</Banner>;
 const navbar = (
   <Navbar
     logo={<b className="font-heading">MOONDROP</b>}
@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Layout
           darkMode={false}
           copyPageButton={false}
-          banner={banner}
+          // banner={banner}
           navbar={navbar}
           pageMap={await getPageMap()}
           footer={<Footer />}

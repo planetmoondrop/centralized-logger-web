@@ -36,7 +36,7 @@ export default function Home() {
           {/* Body copy */}
           <p className="mt-6 max-w-lg text-[0.9375rem] leading-[1.65] text-pretty sm:mt-8 sm:text-lg sm:leading-[1.7] lg:max-w-xl">
             Track every API call across your microservices with complete visibility into
-            request flows, bottlenecks, and failures — with Centralized Logger
+            request flows, bottlenecks and failures - with Centralized Logger
             delivering insights{" "}
             <span className="text-[#faa56c]/90">ready before your coffee gets.</span>
           </p>

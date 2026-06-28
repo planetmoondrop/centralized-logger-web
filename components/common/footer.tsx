@@ -45,7 +45,7 @@ export function Footer() {
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:gap-16">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 lg:gap-16">
             <div>
               <h4 className="text-sm font-medium text-[#faa56c]">Product</h4>
               <ul className="mt-4 space-y-3">
@@ -79,17 +79,18 @@ export function Footer() {
                     Documentation
                   </Link>
                 </li>
-                <li>
+                {/* <li>
                   <Link
                     href="#"
                     className="text-sm text-(--color-baltic-sea-500) transition-colors hover:text-(--color-keppel-400)"
                   >
                     API Reference
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <Link
-                    href="/docs/examples"
+                    href="https://github.com/planetmoondrop/centralized-logger/tree/prod/examples"
+                    target="_blank"
                     className="text-sm text-(--color-baltic-sea-500) transition-colors hover:text-(--color-keppel-400)"
                   >
                     Examples
@@ -98,7 +99,7 @@ export function Footer() {
               </ul>
             </div>
 
-            <div>
+            {/* <div>
               <h4 className="text-sm font-medium text-[#faa56c]">Legal</h4>
               <ul className="mt-4 space-y-3">
                 <li>
@@ -126,7 +127,7 @@ export function Footer() {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
 

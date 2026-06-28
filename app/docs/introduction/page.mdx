@@ -4,14 +4,14 @@ import { Steps, Tabs } from "nextra/components";
 
 Bring consistent, cross-service logging, tracing, and metrics to your NestJS micro/services – with a single module and one line of frontend code. It uses progressive JavaScript, is built with and fully supports TypeScript.
 
-Under the hood, [`centralized-logger`](/docs/introduction#packages) is built on a robust HTTP server powered by [`Nest.JS`](https://nestjs.com/), ensuring scalable, reliable, and production-ready request handling.
+Under the hood, [`centralized-logger`](/docs/introduction#packages) is built on a robust HTTP server powered by [`nest`](https://nestjs.com/), ensuring scalable, reliable, and production-ready request handling.
 
 This library documents the two npm packages that make up the stack.
 
 ## Packages
 
-- [`@planetmoondrop/centralized-logger`](/docs/overview/installation/backend) — NestJS module that ships structured logs to Grafana Loki, exposes Prometheus `/metrics`, and integrates with Tempo via OpenTelemetry.
-- [`@planetmoondrop/logger-client`](/docs/overview/installation/frontend) — Axios helper for browsers that keeps `x-loki-trace-id` flowing across frontend to backend calls.
+- [`@planetmoondrop/centralized-logger`](https://www.npmjs.com/package/@planetmoondrop/centralized-logger) — NestJS module that ships structured logs to Grafana Loki, exposes Prometheus `/metrics`, and integrates with Tempo via OpenTelemetry.
+- [`@planetmoondrop/logger-client`](https://www.npmjs.com/package/@planetmoondrop/logger-client) — Axios helper for browsers that keeps `x-loki-trace-id` flowing across frontend to backend calls.
 
 ## The problem it solves
 
