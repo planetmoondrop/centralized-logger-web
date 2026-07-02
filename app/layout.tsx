@@ -78,7 +78,6 @@ const navbar = (
     </>
     }
     chatLink="https://discord.gg/FPz2P2FM"
-    className="z-9999"
   />
 );
 

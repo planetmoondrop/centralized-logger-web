@@ -268,7 +268,7 @@ export function CreatorCardsOverlay({ children }: { children: React.ReactNode })
           </div>
         </>
       )}
-      <div className="relative z-20 flex w-full flex-col items-center">{children}</div>
+      <div className="relative flex w-full flex-col items-center lg:z-20">{children}</div>
     </div>
   );
 }
