@@ -12,19 +12,19 @@ export default function Home() {
   return (
     <main
       id="home-hero"
-      className="text-foreground flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 sm:py-16 md:min-h-[min(60vh,calc(100dvh-10rem))] lg:px-8"
+      className="text-foreground flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 sm:py-16 md:min-h-[min(60vh,calc(100dvh-10rem))]  lg:px-8"
     >
       <CreatorCardsOverlay>
         {/* Content container — narrow on mobile, capped on desktop */}
-        <div className="flex w-full max-w-2xl flex-col items-center text-center lg:max-w-3xl">
+        <div className="flex w-full max-w-2xl flex-col items-center text-center lg:max-w-3xl px-2">
           {/* Badge */}
           <p className="mb-5 inline-block rounded-lg border-2 border-[#faa56c]/90 px-3 py-1.5 font-mono text-[11px] font-medium tracking-[0.14em] text-[#faa56c]/90 uppercase sm:mb-6 sm:text-[13px]">
             Moondrop Centralized Logger
           </p>
 
           {/* Headline */}
-          <h1 className="font-heading text-3xl leading-[1.12] font-bold tracking-tight text-balance sm:text-5xl sm:leading-[1.1] lg:text-[3.25rem] lg:leading-[1.08]">
-            <span className="whitespace-nowrap">
+          <h1 className="font-heading text-2xl leading-[1.12] font-bold tracking-tight text-balance sm:text-5xl sm:leading-[1.1] lg:text-[3.25rem] lg:leading-[1.08] ">
+            <span className="whitespace-nowrap ">
               Struggling with <span className="text-[#faa56c]/90"> Observability</span>?
             </span>
 
@@ -34,7 +34,7 @@ export default function Home() {
           </h1>
 
           {/* Body copy */}
-          <p className="mt-6 max-w-lg text-[0.9375rem] leading-[1.65] text-pretty sm:mt-8 sm:text-lg sm:leading-[1.7] lg:max-w-xl">
+          <p className="mt-6 max-w-lg text-sm leading-[1.65] text-pretty sm:mt-8 sm:text-lg sm:leading-[1.7] lg:max-w-xl">
             Track every API call across your microservices with complete visibility into
             request flows, bottlenecks and failures - with Centralized Logger
             delivering insights{" "}

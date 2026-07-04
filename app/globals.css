@@ -191,18 +191,28 @@ mark {
   background: #888888;
 }
 
-/* global.css */
-[data-nextra-nav-container] {
-  z-index: 9999;
-}
+/* Mobile nav stacking: navbar (top) > menu drawer > page content */
+@media (max-width: 767px) {
+  .nextra-navbar {
+    z-index: 100 !important;
+    position: sticky !important;
+    top: 0 !important;
+  }
 
-/* or target the mobile menu overlay */
-.nextra-nav-container-blur {
-  z-index: 9998;
-}
-
-.nextra-sidebar-container {
-  z-index: 9999 !important;
+  /* Reset Nextra's inset-0 so the drawer never covers the navbar strip */
+  .nextra-mobile-nav {
+    inset: auto !important;
+    top: var(--nextra-navbar-height) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: calc(100dvh - var(--nextra-navbar-height)) !important;
+    max-height: calc(100dvh - var(--nextra-navbar-height)) !important;
+    padding-top: 0 !important;
+    z-index: 90 !important;
+    background-color: #1b1b1b !important;
+    background-color: rgb(var(--nextra-bg)) !important;
+  }
 }
 
 /* Adding float keyframe animation for FinalCTA floating dots */

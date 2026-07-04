@@ -10,7 +10,7 @@ export function Footer() {
       <div className="mx-auto">
         <div className="flex flex-col gap-12 px-2.5 sm:px-6 lg:flex-row lg:justify-between lg:px-12">
           {/* Brand column */}
-          <div className="min-w-xl lg:max-w-xl">
+          <div className="min-fit lg:max-w-xl">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-auto items-center justify-center rounded-none bg-(--color-baltic-sea-800)">
                 <Image src={Logo} alt="Moondrop" className="h-10 w-auto" width={10} height={10} />
