@@ -7,6 +7,7 @@ import "./globals.css";
 import { Footer } from "@/components/common/footer";
 import Logo from "@/public/assets/logo.svg";
 import Image from "next/image";
+import { MobileNavbarFix } from "@/components/common/mobile-navbar-fix";
 import { BuyMeCoffeeWidget } from "@/components/common/buy-me-coffee-widget";
 
 export const metadata: Metadata = {
@@ -132,6 +133,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           {children}
         </Layout>
+        <MobileNavbarFix />
         <BuyMeCoffeeWidget />
       </body>
     </html>
