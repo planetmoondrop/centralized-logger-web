@@ -27,7 +27,8 @@ export function Footer() {
             <div className="mt-6 flex items-center gap-3">
               <Link
                 target="_blank"
-                href="https://github.com/planetmoondrop"
+                aria-label="GitHub"
+                href="https://github.com/planetmoondrop/centralized-logger"
                 className="flex h-9 w-9 items-center justify-center rounded-none border border-(--color-baltic-sea-800) transition-colors hover:border-(--color-keppel-700) hover:bg-(--color-keppel-950)"
               >
                 <GithubLogo
@@ -37,6 +38,7 @@ export function Footer() {
               </Link>
               <Link
                 target="_blank"
+                aria-label="Discord"
                 href="https://discord.gg/FPz2P2FM"
                 className="flex h-9 w-9 items-center justify-center rounded-none border border-(--color-baltic-sea-800) transition-colors hover:border-(--color-keppel-700) hover:bg-(--color-keppel-950)"
               >
