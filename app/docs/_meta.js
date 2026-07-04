@@ -6,10 +6,10 @@ export default {
   overview: "Overview",
   "tracing-and-viewer": "Tracing & Trace Viewer",
   deployment: "Deployment",
-  metrics: "Prometheus metrics",
+  metrics: "Prometheus Metrics",
   "db-and-logging": "DB & Logging",
   "observability-and-otel": "OpenTelemetry & Tempo",
-  "security-and-operations": "Security & operations",
+  "security-and-operations": "Security & Operations",
   troubleshooting: "Troubleshooting",
   "support-us": "Support Us",
 };

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Layout, Navbar } from "nextra-theme-docs";
-import {
-  // Banner,
-  Head
-} from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style.css";
 import "./globals.css";
 import { Footer } from "@/components/common/footer";
-import Logo from '@/public/assets/logo.svg'
+import Logo from "@/public/assets/logo.svg";
 import Image from "next/image";
+import { BuyMeCoffeeWidget } from "@/components/common/buy-me-coffee-widget";
 
 export const metadata: Metadata = {
-  metadataBase: typeof window !== "undefined" ? new URL(`${window.location.origin}`) : 'https://planetmoondrop.com',
+  metadataBase:
+    typeof window !== "undefined"
+      ? new URL(`${window.location.origin}`)
+      : "https://logger.planetmoondrop.com",
   title: {
     default: "Moondrop Centralized Logger",
     template: "%s | Moondrop",
@@ -48,10 +48,26 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: "/assets/moondrop-favicon-assets/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
-      { url: "/assets/moondrop-favicon-assets/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/assets/moondrop-favicon-assets/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/assets/moondrop-favicon-assets/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      {
+        url: "/assets/moondrop-favicon-assets/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+      {
+        url: "/assets/moondrop-favicon-assets/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/assets/moondrop-favicon-assets/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/assets/moondrop-favicon-assets/favicon-16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
       { url: "/assets/logo.svg" },
     ],
     apple: "/assets/moondrop-favicon-assets/apple-touch-icon.png",
@@ -72,11 +88,19 @@ const geistMono = Geist_Mono({
 // const banner = <Banner storageKey="some-key">Moondrop - Centralized logger 1.0.0 is released 🎉</Banner>;
 const navbar = (
   <Navbar
-    logo={<>
-      <Image src={Logo} alt="Moondrop" className="h-10 w-auto" width={10} height={10} />
-      <b className="font-heading">MOONDROP</b>
-    </>
+    logo={
+      <>
+        <Image
+          src={Logo}
+          alt="Moondrop"
+          className="h-10 w-auto"
+          width={10}
+          height={10}
+        />
+        <b className="font-heading">MOONDROP</b>
+      </>
     }
+    projectLink="https://github.com/planetmoondrop/centralized-logger"
     chatLink="https://discord.gg/FPz2P2FM"
   />
 );
@@ -91,9 +115,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <Head
-      // ... Your additional head options
-      ></Head>
       <body>
         <Layout
           darkMode={false}
@@ -111,6 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           {children}
         </Layout>
+        <BuyMeCoffeeWidget />
       </body>
     </html>
   );
