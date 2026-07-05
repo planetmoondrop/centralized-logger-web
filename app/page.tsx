@@ -2,10 +2,10 @@ import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { CopyInstallCommand } from "@/components/common/copy-install-command";
 import { CreatorCardsOverlay } from "@/components/common/creator-card";
-// import ProjectOverviewCard from "@/components/home/logs-metrics";
 import { TerminalDemo } from "@/components/home/terminal-demo";
 import { FAQ } from "@/components/home/faq";
 import { FinalCTA } from "@/components/home/final-cta";
+import ProjectOverviewCard from "@/components/home/logs-metrics";
 // import ObservabilitySection from "@/components/home/logs-metrics";
 
 export default function Home() {
@@ -61,7 +61,7 @@ export default function Home() {
         </div>
       </CreatorCardsOverlay>
 
-      {/* <ProjectOverviewCard /> */}
+      <ProjectOverviewCard />
       {/* <ObservabilitySection /> */}
       <TerminalDemo />
       <FAQ />
