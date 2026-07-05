@@ -9,6 +9,7 @@ import Logo from "@/public/assets/logo.svg";
 import Image from "next/image";
 import { MobileNavbarFix } from "@/components/common/mobile-navbar-fix";
 import { BuyMeCoffeeWidget } from "@/components/common/buy-me-coffee-widget";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase:
@@ -133,6 +134,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         >
           {children}
         </Layout>
+        <Analytics />
         <MobileNavbarFix />
         <BuyMeCoffeeWidget />
       </body>
