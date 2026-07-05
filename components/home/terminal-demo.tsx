@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Cube, CaretRight } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
+import { Cube, CaretRight } from "@phosphor-icons/react/dist/ssr";
 
 const CONFIGS = [
     {
@@ -85,6 +84,7 @@ export function TerminalDemo() {
                 100 + Math.random() * 50
             ); // 100-150ms per char
         } else {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsComplete(true);
         }
 
@@ -262,8 +262,8 @@ export function TerminalDemo() {
                         <div ref={bulletsSectionRef} className="mt-6 sm:mt-8 space-y-3 sm:space-y-4">
                             {[
                                 "100% Free & Open Source",
-                                "Unlimited compute & traces",
-                                "Self-host in one click",
+                                "No limits on traces captured",
+                                "Self-host the entire platform",
                             ].map((text, index) => (
                                 <div
                                     key={index}

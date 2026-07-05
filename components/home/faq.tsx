@@ -7,17 +7,22 @@ const FAQS = [
   {
     question: "Is Planetmoondrop free to use?",
     answer:
-      "Yes, Planetmoondrop is 100% free and open-source. There are no limits on compute hours or traces captured. You can self-host the entire platform or use our managed cloud version for free.",
+      "Yes, Planetmoondrop is 100% free and open-source MIT licensed software. There are no limits on traces captured. You can self-host the entire platform.",
   },
   {
     question: "What languages and frameworks are supported?",
     answer:
-      "Our SDK currently supports Node.js, Python, and Go. It can integrate with any web framework like Express, Next.js, FastAPI, and standard HTTP clients.",
+      "Our SDK currently supports Node.js. It can integrate with any framework like NestJS, Express, Next.js, React Native, Vite and standard HTTP clients.",
   },
+  // {
+  //   question: "How do you handle security and data privacy?",
+  //   answer:
+  //     "We process trace data with strict isolation. Since we are open-source, you can self-host the entire infrastructure to ensure your trace data never leaves your VPC.",
+  // },
   {
-    question: "How do you handle security and data privacy?",
+    question: "How can I deploy Planetmoondrop using Docker?",
     answer:
-      "We process trace data with strict isolation. Since we are open-source, you can self-host the entire infrastructure to ensure your trace data never leaves your VPC.",
+      "Planetmoondrop provides official Docker images for core components. You can deploy the system using the provided Dockerfiles and example docker-compose setups found in the repository. This makes it easy to get up and running locally or in production—just clone the repo and follow the Docs for Docker deployment instructions.",
   },
   {
     question: "Can I filter what data gets traced?",
@@ -32,7 +37,7 @@ const FAQS = [
   {
     question: "How do I get support?",
     answer:
-      "Since Planetmoondrop is an open-source project, you can get support from our active community on Discord or open an issue on our GitHub repository. We publish real-time status at status.planetmoondrop.io.",
+      "Since Planetmoondrop is an open-source project, you can get support from our active community on Discord or open an issue on our GitHub repository.",
   },
 ]
 

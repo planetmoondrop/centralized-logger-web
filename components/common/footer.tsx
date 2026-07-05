@@ -145,7 +145,7 @@ export function Footer() {
             <span className="h-2 w-2 animate-pulse rounded-none bg-(--color-keppel-400)" />
             <span className="text-xs text-(--color-baltic-sea-500)">
               Developed with ❤️ by{" "}
-              <Link href="https://a-ameerofficials-projects.vercel.app" target="_blank">
+              <Link href="https://ameer.planetmoondrop.com" target="_blank">
                 <span className="text-[#faa56c]">Planet Moondrop</span>
               </Link>
             </span>

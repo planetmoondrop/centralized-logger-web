@@ -23,18 +23,38 @@ interface CreatorCard {
   avatar: string;
   description: string;
   supporters: string;
+  footerIcon: "check" | "plug" | "chart" | "flow" | "bolt" | "unlock";
   side: "left" | "right";
   rotation: number;
   topPercent: number;
   peekPx: number;
 }
 
+const FOOTER_ICON_PATHS: Record<CreatorCard["footerIcon"], string> = {
+  check: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z",
+  plug: "M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-1.1 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z",
+  chart: "M18 20V10h2v10h-2zM12 20V4h2v16h-2zM6 20v-6h2v6H6z",
+  flow: "M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z",
+  bolt: "M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 12 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z",
+  unlock:
+    "M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z",
+};
+
+function FooterIcon({ type }: { type: CreatorCard["footerIcon"] }) {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.55)" aria-hidden>
+      <path d={FOOTER_ICON_PATHS[type]} />
+    </svg>
+  );
+}
+
 const CARDS: CreatorCard[] = [
   {
     id: 1,
-    avatar: "C",
-    description: "Cara is building a new platform for artists",
-    supporters: "8,780 supporters",
+    avatar: "LOG",
+    description: "Scattered logs? One traceId links calls, queries & logs.",
+    supporters: "no more grep hell",
+    footerIcon: "check",
     side: "left",
     rotation: 8,
     topPercent: 5,
@@ -42,10 +62,10 @@ const CARDS: CreatorCard[] = [
   },
   {
     id: 2,
-    avatar: "KC",
-    description:
-      "Kaleigh Cohen is creating indoor cycling and strength workouts on YouTube!",
-    supporters: "4,488 supporters",
+    avatar: "CTX",
+    description: "Tracing by hand? Context auto-follows every downstream call.",
+    supporters: "one module drop-in",
+    footerIcon: "plug",
     side: "left",
     rotation: -4,
     topPercent: 24,
@@ -53,9 +73,10 @@ const CARDS: CreatorCard[] = [
   },
   {
     id: 3,
-    avatar: "TS",
-    description: "Teacher Stefano is creating YouTube videos and Podcast",
-    supporters: "641 supporters",
+    avatar: "MET",
+    description: "Blind to bottlenecks? /metrics ships on day one.",
+    supporters: "no custom metrics",
+    footerIcon: "chart",
     side: "left",
     rotation: 10,
     topPercent: 50,
@@ -63,9 +84,10 @@ const CARDS: CreatorCard[] = [
   },
   {
     id: 4,
-    avatar: "TT",
-    description: "The Thrill Of The Thrift is creating thrifting videos",
-    supporters: "7.1K supporters",
+    avatar: "WEB",
+    description: "Browser loses context? Trace ID flows from click to API.",
+    supporters: "UI-to-API tracing",
+    footerIcon: "flow",
     side: "right",
     rotation: 9,
     topPercent: 4,
@@ -73,9 +95,10 @@ const CARDS: CreatorCard[] = [
   },
   {
     id: 5,
-    avatar: "BTR",
-    description: "Beach Talk Radio is a dinky little Podcast",
-    supporters: "1,604 supporters",
+    avatar: "DBG",
+    description: "Grafana too heavy? /_trace maps flows in-browser.",
+    supporters: "debug in seconds",
+    footerIcon: "bolt",
     side: "right",
     rotation: 8,
     topPercent: 28,
@@ -83,10 +106,10 @@ const CARDS: CreatorCard[] = [
   },
   {
     id: 6,
-    avatar: "SP",
-    description:
-      "Simple Politics is helping people have better conversations about politics",
-    supporters: "2,891 supporters",
+    avatar: "MIT",
+    description: "APM too pricey? MIT — self-host Loki, Tempo & Prometheus.",
+    supporters: "$0 · no lock-in",
+    footerIcon: "unlock",
     side: "right",
     rotation: -12,
     topPercent: 54,
@@ -175,9 +198,7 @@ function Card({
           {card.description}
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.55)">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-          </svg>
+          <FooterIcon type={card.footerIcon} />
           <span
             style={{
               fontSize: "10px",
