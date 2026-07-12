@@ -103,7 +103,7 @@ const navbar = (
       </>
     }
     projectLink="https://github.com/planetmoondrop/centralized-logger"
-    chatLink="https://discord.gg/FPz2P2FM"
+    chatLink="https://discord.gg/M4pg2PqQry"
   />
 );
 
@@ -128,7 +128,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           editLink={true}
           feedback={{
             content: <span className="text-[#faa56c]">Question? Give us feedback</span>,
-            link: "https://discord.gg/FPz2P2FM",
+            link: "https://discord.gg/M4pg2PqQry",
             labels: "Discord",
           }}
         >

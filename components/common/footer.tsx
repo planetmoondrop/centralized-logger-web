@@ -39,7 +39,7 @@ export function Footer() {
               <Link
                 target="_blank"
                 aria-label="Discord"
-                href="https://discord.gg/FPz2P2FM"
+                href="https://discord.gg/M4pg2PqQry"
                 className="flex h-9 w-9 items-center justify-center rounded-none border border-(--color-baltic-sea-800) transition-colors hover:border-(--color-keppel-700) hover:bg-(--color-keppel-950)"
               >
                 <DiscordLogo
